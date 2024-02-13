@@ -9,10 +9,16 @@ class CSVFile:
         self.name = name
 
     def validate_date(self, date):
-        return date[:4].isdigit() and date[4:5] == "-" and date[5:7].isdigit() and int(date[5:7])
+        return (
+            date
+            and date[:4].isdigit()
+            and date[4:5] == "-"
+            and date[5:7].isdigit()
+            and int(date[5:7]) in range(1, 13)
+        )
 
     def validate_value(self, value):
-        return value.isdigit()
+        return value and value.isdigit() and int(value) >= 0
 
 
 class CSVTimeSeriesFile(CSVFile):
@@ -40,14 +46,16 @@ class CSVTimeSeriesFile(CSVFile):
                     data and data[-1][0] < sliced[0] or not data
                 ):  # eval of a list as bool gives false if list is empty
                     sliced[1] = int(sliced[1])
-                    data.append([sliced[0], sliced[1]]) #not using .append(sliced) to ignore any erroneous additional values as per request
+                    data.append(
+                        [sliced[0], sliced[1]]
+                    )  # not using .append(sliced) to ignore any erroneous additional values as per request
                 elif data and data[-1][0] >= sliced[0]:
                     print(
-                        "Trovato valore fuori posto o valore duplicato all'indice: {}".format(
-                            sliced[0]
+                        "Trovato valore fuori posto o valore duplicato all'indice: {}, dopo {}".format(
+                            sliced[0], data[-1][0]
                         )
                     )
-                    # raise ExamException("Trovato valore fuori posto o valore duplicato all'indice: {}".format(sliced[0]))
+                    # raise ExamException("Trovato valore fuori posto o valore duplicato all'indice: {}, dopo {}".format(sliced[0], data[-1][0]))
 
         file.close()
 
@@ -56,7 +64,7 @@ class CSVTimeSeriesFile(CSVFile):
 
 def compute_increments(time_series, first_year, last_year):
 
-    # validate params
+    # validate params, both strings and ints are accepted since it wasn't specified
     if isinstance(first_year, str) and first_year.isdigit():
         pass
     elif isinstance(first_year, int):
@@ -74,9 +82,9 @@ def compute_increments(time_series, first_year, last_year):
         raise ExamException(
             "last_year non è un numero intero positivo o una stringa che ne rappresenti uno"
         )
-        
-    #don't check for first < last because it will just return [] without causing any issues
-        
+
+    # don't check for first < last because it will just return [] without causing any issues
+
     averages = {}
     # group the values
     for item in time_series:
@@ -111,7 +119,8 @@ def compute_increments(time_series, first_year, last_year):
     print("Increments:")
     return variations
 
-#TESTING
+
+# TESTING
 time_series_file = CSVTimeSeriesFile(name="data.csv")
 
 time_series = time_series_file.get_data()
