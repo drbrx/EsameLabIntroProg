@@ -9,7 +9,7 @@ class CSVFile:
         self.name = name
 
     def validate_date(self, date):
-        return date[:4].isdigit() and date[4:5] == "-" and date[5:7].isdigit()
+        return date[:4].isdigit() and date[4:5] == "-" and date[5:7].isdigit() and int(date[5:7])
 
     def validate_value(self, value):
         return value.isdigit()
@@ -40,14 +40,14 @@ class CSVTimeSeriesFile(CSVFile):
                     data and data[-1][0] < sliced[0] or not data
                 ):  # eval of a list as bool gives false if list is empty
                     sliced[1] = int(sliced[1])
-                    data.append(sliced)
+                    data.append([sliced[0], sliced[1]]) #not using .append(sliced) to ignore any erroneous additional values as per request
                 elif data and data[-1][0] >= sliced[0]:
                     print(
                         "Trovato valore fuori posto o valore duplicato all'indice: {}".format(
                             sliced[0]
                         )
                     )
-                    # raise ExamException('Trovato valore fuori posto o valore duplicato')
+                    # raise ExamException("Trovato valore fuori posto o valore duplicato all'indice: {}".format(sliced[0]))
 
         file.close()
 
@@ -74,11 +74,13 @@ def compute_increments(time_series, first_year, last_year):
         raise ExamException(
             "last_year non è un numero intero positivo o una stringa che ne rappresenti uno"
         )
-
+        
+    #don't check for first < last because it will just return [] without causing any issues
+        
     averages = {}
     # group the values
     for item in time_series:
-        if item[0][:4] >= first_year and item[0][:4] <= last_year:
+        if first_year <= item[0][:4] <= last_year:
             if item[0][0:4] not in averages:
                 averages[item[0][0:4]] = []
             averages[item[0][0:4]].append(item[1])
@@ -109,7 +111,7 @@ def compute_increments(time_series, first_year, last_year):
     print("Increments:")
     return variations
 
-
+#TESTING
 time_series_file = CSVTimeSeriesFile(name="data.csv")
 
 time_series = time_series_file.get_data()
