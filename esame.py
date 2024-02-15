@@ -25,7 +25,7 @@ class CSVFile:
             value
             #check the value
             and value.isdigit() 
-            and int(value) >= 0
+            and int(value) > 0 #not accepting 0 asp per request
         )
 
 
@@ -61,9 +61,9 @@ class CSVTimeSeriesFile(CSVFile):
         return data
 
 
-def compute_increments(time_series, first_year, last_year):
+def compute_increments(time_series, first_year, last_year): #not using defaults for ease of update and flexibility
 
-    # validate params, both strings and ints are accepted since it wasn't specified
+    # validate params, both strings and ints for flexibility
     if isinstance(first_year, str) and first_year.isdigit():
         pass
     elif isinstance(first_year, int):
